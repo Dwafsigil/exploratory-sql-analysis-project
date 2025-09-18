@@ -33,7 +33,6 @@ SELECT id, scientific_name FROM species WHERE scientific_name LIKE '%Tachycineta
 UPDATE species SET scientific_name = "Tachycineta leucorrhoa test" WHERE ID = 1266;
 SELECT id, * FROM species WHERE scientific_name = "Tachycineta leucorrhoa test";
 
-
 -- 15
 DELETE FROM observations WHERE id = 518;
 SELECT * FROM observations WHERE id = 518;
