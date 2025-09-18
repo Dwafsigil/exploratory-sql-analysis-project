@@ -28,7 +28,7 @@ def run_queries_from_file(engine, filepath):
         with open(filepath, 'r') as file:
             content = file.read()
         queries = [q.strip() for q in content.split(';') if q.strip()]
-        for i, query in enumerate(queries, start=0):
+        for i, query in enumerate(queries, start=1):
             # Skip if it's just a comment
             if query.startswith('--') or not any(c.isalnum() for c in query):
                 continue
