@@ -23,7 +23,19 @@ SELECT s.scientific_name as scientific_name FROM observations o JOIN species s O
 
 SELECT r.name AS region_name, s.scientific_name, COUNT(*) AS observation_count FROM observations o JOIN regions r ON o.region_id = r.id JOIN species s On o.species_id = s.id  GROUP BY r.id, s.id ORDER BY r.name, observation_count DESC;
 
--- INSERT INTO observations(id, species_id, region_id, observer, observation_date, latitude, longitude, "count") VALUES(501,1, 1, 'obsr201342', '2001-09-09', -30.234123, 179.32345, 5);
+INSERT INTO observations (species_id, region_id, observer, observation_date, latitude, longitude, count) VALUES (269, 1, 'obsr201342', '2001-09-09', -30.9134123, 179.32345, 5);
+SELECT * FROM observations WHERE latitude = -30.9134123 ;
+
+INSERT OR IGNORE INTO species (scientific_name, common_name, genus, family, order_name) VALUES ('Tachycineta leucorhoa', 'White-rumped Swallow', 'Tachycineta', 'Hirundinidae', 'Passeriformes');
+SELECT id, scientific_name FROM species WHERE scientific_name LIKE '%Tachycineta leucor%';
+UPDATE species SET scientific_name = "Tachycineta leucorrhoa test" WHERE ID = 1266;
+SELECT id, * FROM species WHERE scientific_name = "Tachycineta leucorrhoa test";
+
+
+
+DELETE FROM observations WHERE id = 518;
+SELECT * FROM observations WHERE id = 518;
+
 
 -- SELECT * FROM regions;
 -- SELECT * FROM species;

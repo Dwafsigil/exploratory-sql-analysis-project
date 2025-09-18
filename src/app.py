@@ -1,48 +1,59 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import pandas as pd
-
 
 # Load environment variables
 load_dotenv()
 
-# Read DB path from environment variable
 DB_PATH = os.getenv('DB_PATH', './data/database.db')  # fallback to default
 DB_URL = f'sqlite:///{DB_PATH}'
 
-# Connect to the existing SQLite database
 def connect():
     try:
         engine = create_engine(DB_URL)
-        engine.connect()
-        print("✅ Connected to existing SQLite database.")
+        # Optional: verify file & show absolute path
+        print(f"DB file: {os.path.abspath(DB_PATH)}")
+        with engine.connect() as conn:
+            # Good practice for SQLite if you use FKs
+            conn.execute(text("PRAGMA foreign_keys=ON;"))
+        print("✅ Connected to SQLite.")
         return engine
     except Exception as e:
         print(f"❌ Error connecting to database: {e}")
         return None
 
-# Run student-defined queries from queries.sql
+def is_select_like(sql: str) -> bool:
+    s = sql.lstrip().lower()
+    return s.startswith(("select", "with", "pragma", "show", "explain"))
+
 def run_queries_from_file(engine, filepath):
     try:
-        with open(filepath, 'r') as file:
+        with open(filepath, 'r', encoding='utf-8') as file:
             content = file.read()
         queries = [q.strip() for q in content.split(';') if q.strip()]
-        for i, query in enumerate(queries, start=1):
-            # Skip if it's just a comment
+
+        for i, query in enumerate(queries, start=0):
+            # Skip full-line SQL comments
             if query.startswith('--') or not any(c.isalnum() for c in query):
                 continue
+
+            print(f"\n🔎 Query {i}:\n{query}")
             try:
-                print(f"\n🔎 Query {i}:\n{query}")
-                df = pd.read_sql(query, con=engine)
-                print(df)
+                if is_select_like(query):
+                    # READ path: returns rows
+                    df = pd.read_sql(query, con=engine)
+                    print(df)
+                else:
+                    # WRITE path: INSERT/UPDATE/DELETE/DDL — commit explicitly
+                    with engine.begin() as conn:  # begins a tx and commits on success
+                        conn.execute(text(query))
+                    print("✅ Statement executed and committed.")
             except Exception as e:
                 print(f"❌ Error in Query {i}: {e}")
     except Exception as e:
         print(f"❌ Error processing queries from {filepath}: {e}")
 
-
-# Entry point
 if __name__ == "__main__":
     engine = connect()
     if engine:
